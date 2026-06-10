@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .calculator{
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        #display{
+            width: 100%;
+            height: 60px;
+            font-size: 24px;
+            text-align: right;
+            margin-bottom: 10px;
+            padding-right: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .buttons{
+            display: grid;
+            grid-template-columns: repeat(5, 70px);
+            gap: 5px;
+        }
+
+        button{
+            height: 50px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover{
+            opacity: 0.8;
+        }
+
+        .operator{
+            background-color: orange;
+            color: white;
+        }
+
+        .function{
+            background-color: #555;
+            color: white;
+        }
+
+        .number{
+            background-color: #ddd;
+        }
+
+        .calculus-panel{
+            margin-top: 12px;
+            background: #111;
+            color: #fff;
+            border-radius: 10px;
+            padding: 12px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .calculus-panel label{
+            display: grid;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        .calculus-panel input{
+            width: 100%;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 16px;
+        }
+
+        .calculus-bounds{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .calculus-actions{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .calculus-title{
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .hidden{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <input type="text" id="display" readonly>
+
+    <div class="buttons">
+        <button class="function">sin</button>
+        <button class="function">cos</button>
+        <button class="function">tan</button>
+        <button class="function">log</button>
+        <button class="function">√</button>
+
+        <button class="number">7</button>
+        <button class="number">8</button>
+        <button class="number">9</button>
+        <button class="operator">/</button>
+        <button class="function">x²</button>
+
+        <button class="number">4</button>
+        <button class="number">5</button>
+        <button class="number">6</button>
+        <button class="operator">*</button>
+        <button class="function">x³</button>
+
+        <button class="number">1</button>
+        <button class="number">2</button>
+        <button class="number">3</button>
+        <button class="operator">-</button>
+        <button class="function">π</button>
+
+        <button class="number">0</button>
+        <button class="number">.</button>
+        <button class="operator">+</button>
+        <button class="operator">=</button>
+        <button class="function">e</button>
+
+        <button class="function">C</button>
+        <button class="function">(</button>
+        <button class="function">)</button>
+        <button class="function">%</button>
+        <button class="function">^</button>
+
+        <button class="function">Del</button>
+        <button class="function">ln</button>
+        <button class="function">abs</button>
+        <button class="function">1/x</button>
+        <button class="function">x!</button>
+
+        <button class="function">x</button>
+        <button class="function">diff</button>
+        <button class="function">int</button>
+        <button class="function">A=πx²</button>
+        <button class="function">V=4/3πx³</button>
+
+        <button class="function">,</button>
+        <button class="function">dx</button>
+        <button class="function">∫x</button>
+        <button class="function">∫sinx</button>
+        <button class="function">d(sinx)</button>
+    </div>
+
+    <div id="calculus-panel" class="calculus-panel hidden">
+        <div id="calculus-title" class="calculus-title">Calculus</div>
+        <label>
+            Function
+            <input id="calculus-expression" type="text" placeholder="sin(x)" />
+        </label>
+        <label id="calculus-point-row">
+            Point
+            <input id="calculus-point" type="text" placeholder="0" />
+        </label>
+        <div id="calculus-bounds-row" class="calculus-bounds hidden">
+            <label>
+                Lower
+                <input id="calculus-lower" type="text" placeholder="0" />
+            </label>
+            <label>
+                Upper
+                <input id="calculus-upper" type="text" placeholder="pi" />
+            </label>
+        </div>
+        <div class="calculus-actions">
+            <button id="calculus-cancel" type="button" class="function">Cancel</button>
+            <button id="calculus-apply" type="button" class="operator">Apply</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const display = document.getElementById('display');
+    const buttons = document.querySelectorAll('button');
+    const calculusPanel = document.getElementById('calculus-panel');
+    const calculusTitle = document.getElementById('calculus-title');
+    const calculusExpression = document.getElementById('calculus-expression');
+    const calculusPointRow = document.getElementById('calculus-point-row');
+    const calculusPoint = document.getElementById('calculus-point');
+    const calculusBoundsRow = document.getElementById('calculus-bounds-row');
+    const calculusLower = document.getElementById('calculus-lower');
+    const calculusUpper = document.getElementById('calculus-upper');
+    const calculusCancel = document.getElementById('calculus-cancel');
+    const calculusApply = document.getElementById('calculus-apply');
+    let activeCalculusMode = '';
+
+    buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const value = button.textContent.trim();
+
+            if (button.classList.contains('number') || value === '.') {
+                display.value += value;
+                return;
+            }
+
+            if (value === 'C') {
+                display.value = '';
+                return;
+            }
+
+            if (value === 'Del') {
+                display.value = display.value.slice(0, -1);
+                return;
+            }
+
+            if (value === '=') {
+                try {
+                    const result = evaluateExpression(display.value);
+                    display.value = result === '' ? '' : formatResult(result);
+                } catch {
+                    display.value = 'Error';
+                }
+                return;
+            }
+
+            if (value === 'π') {
+                display.value += 'pi';
+                return;
+            }
+
+            if (value === 'e') {
+                display.value += 'e';
+                return;
+            }
+
+            if (value === '^') {
+                display.value += '**';
+                return;
+            }
+
+            if (value === '√') {
+                display.value += 'sqrt(';
+                return;
+            }
+
+            if (value === 'sin' || value === 'cos' || value === 'tan' || value === 'log' || value === 'ln' || value === 'abs' || value === '1/x') {
+                if (value === '1/x') {
+                    display.value += 'recip(';
+                    return;
+                }
+
+                display.value += `${value}(`;
+                return;
+            }
+
+            if (value === 'diff') {
+                openCalculusPanel('diff');
+                return;
+            }
+
+            if (value === 'int') {
+                openCalculusPanel('int');
+                return;
+            }
+
+            if (value === 'x²') {
+                display.value += '**2';
+                return;
+            }
+
+            if (value === 'x³') {
+                display.value += '**3';
+                return;
+            }
+
+            if (value === 'x!') {
+                display.value += '!';
+                return;
+            }
+
+            if (value === 'x') {
+                display.value += 'x';
+                return;
+            }
+
+            if (value === ',') {
+                display.value += ',';
+                return;
+            }
+
+            if (value === 'dx') {
+                display.value += ',0';
+                return;
+            }
+
+            if (value === '∫x') {
+                display.value += 'int(x,0,1)';
+                return;
+            }
+
+            if (value === '∫sinx') {
+                display.value += 'int(sin(x),0,pi)';
+                return;
+            }
+
+            if (value === 'd(sinx)') {
+                display.value += 'diff(sin(x),0)';
+                return;
+            }
+
+            if (value === 'A=πx²') {
+                display.value += 'pi*x**2';
+                return;
+            }
+
+            if (value === 'V=4/3πx³') {
+                display.value += '(4/3)*pi*x**3';
+                return;
+            }
+
+            display.value += value;
+        });
+    });
+
+    calculusCancel.addEventListener('click', closeCalculusPanel);
+
+    calculusApply.addEventListener('click', () => {
+        const expression = calculusExpression.value.trim();
+
+        if (expression === '') {
+            return;
+        }
+
+        if (activeCalculusMode === 'diff') {
+            const point = calculusPoint.value.trim() || '0';
+            display.value += `diff(${expression},${point})`;
+        } else if (activeCalculusMode === 'int') {
+            const lowerBound = calculusLower.value.trim() || '0';
+            const upperBound = calculusUpper.value.trim() || 'pi';
+            display.value += `int(${expression},${lowerBound},${upperBound})`;
+        }
+
+        closeCalculusPanel();
+    });
+
+    function openCalculusPanel(mode) {
+        activeCalculusMode = mode;
+        calculusPanel.classList.remove('hidden');
+
+        if (mode === 'diff') {
+            calculusTitle.textContent = 'Differentiate';
+            calculusPointRow.classList.remove('hidden');
+            calculusBoundsRow.classList.add('hidden');
+            calculusExpression.value = 'sin(x)';
+            calculusPoint.value = '0';
+        } else {
+            calculusTitle.textContent = 'Integrate';
+            calculusPointRow.classList.add('hidden');
+            calculusBoundsRow.classList.remove('hidden');
+            calculusExpression.value = 'sin(x)';
+            calculusLower.value = '0';
+            calculusUpper.value = 'pi';
+        }
+
+        calculusExpression.focus();
+        calculusExpression.select();
+    }
+
+    function closeCalculusPanel() {
+        activeCalculusMode = '';
+        calculusPanel.classList.add('hidden');
+    }
+
+    function evaluateExpression(expression) {
+        const trimmed = expression.trim();
+
+        if (trimmed === '') {
+            return '';
+        }
+
+        const resolved = resolveAdvancedFunctions(trimmed);
+        const sanitized = normalizeExpression(resolved);
+
+        return Function(
+            'x',
+            'sin',
+            'cos',
+            'tan',
+            'log',
+            'ln',
+            'abs',
+            'sqrt',
+            'recip',
+            'fact',
+            'Math',
+            `"use strict"; return (${sanitized});`
+        )(undefined, sin, cos, tan, log, ln, absValue, sqrt, recip, fact, Math);
+    }
+
+    function resolveAdvancedFunctions(expression) {
+        let resolved = expression;
+
+        while (true) {
+            const diffIndex = resolved.indexOf('diff(');
+            const intIndex = resolved.indexOf('int(');
+
+            let functionIndex = -1;
+            let functionName = '';
+
+            if (diffIndex !== -1 && (intIndex === -1 || diffIndex < intIndex)) {
+                functionIndex = diffIndex;
+                functionName = 'diff';
+            } else if (intIndex !== -1) {
+                functionIndex = intIndex;
+                functionName = 'int';
+            } else {
+                break;
+            }
+
+            const argumentStart = functionIndex + functionName.length + 1;
+            const { argumentsList, endIndex } = extractArguments(resolved, argumentStart);
+
+            let replacement = NaN;
+
+            if (functionName === 'diff') {
+                if (argumentsList.length === 2) {
+                    replacement = numericalDerivative(argumentsList[0], argumentsList[1]);
+                }
+            } else if (functionName === 'int') {
+                if (argumentsList.length === 3) {
+                    replacement = numericalIntegral(argumentsList[0], argumentsList[1], argumentsList[2]);
+                }
+            }
+
+            resolved = `${resolved.slice(0, functionIndex)}${replacement}${resolved.slice(endIndex + 1)}`;
+        }
+
+        return resolved;
+    }
+
+    function extractArguments(expression, startIndex) {
+        let depth = 1;
+        let currentArgument = '';
+        const argumentsList = [];
+
+        for (let index = startIndex; index < expression.length; index += 1) {
+            const character = expression[index];
+
+            if (character === '(') {
+                depth += 1;
+                currentArgument += character;
+                continue;
+            }
+
+            if (character === ')') {
+                depth -= 1;
+
+                if (depth === 0) {
+                    argumentsList.push(currentArgument.trim());
+                    return { argumentsList, endIndex: index };
+                }
+
+                currentArgument += character;
+                continue;
+            }
+
+            if (character === ',' && depth === 1) {
+                argumentsList.push(currentArgument.trim());
+                currentArgument = '';
+                continue;
+            }
+
+            currentArgument += character;
+        }
+
+        throw new Error('Unmatched function call');
+    }
+
+    function numericalDerivative(expression, pointExpression) {
+        const point = Number(evaluateCore(pointExpression, undefined));
+
+        if (!Number.isFinite(point)) {
+            return NaN;
+        }
+
+        const delta = 1e-5;
+        const resolvedExpression = resolveAdvancedFunctions(expression);
+        const forward = evaluateCore(resolvedExpression, point + delta);
+        const backward = evaluateCore(resolvedExpression, point - delta);
+
+        if (!Number.isFinite(forward) || !Number.isFinite(backward)) {
+            return NaN;
+        }
+
+        return (forward - backward) / (2 * delta);
+    }
+
+    function numericalIntegral(expression, lowerExpression, upperExpression) {
+        const lower = Number(evaluateCore(lowerExpression, undefined));
+        const upper = Number(evaluateCore(upperExpression, undefined));
+
+        if (!Number.isFinite(lower) || !Number.isFinite(upper)) {
+            return NaN;
+        }
+
+        if (lower === upper) {
+            return 0;
+        }
+
+        const resolvedExpression = resolveAdvancedFunctions(expression);
+        const steps = 1000;
+        const interval = (upper - lower) / steps;
+        let total = evaluateCore(resolvedExpression, lower) + evaluateCore(resolvedExpression, upper);
+
+        if (!Number.isFinite(total)) {
+            return NaN;
+        }
+
+        for (let index = 1; index < steps; index += 1) {
+            const x = lower + index * interval;
+            const weight = index % 2 === 0 ? 2 : 4;
+            const value = evaluateCore(resolvedExpression, x);
+
+            if (!Number.isFinite(value)) {
+                return NaN;
+            }
+
+            total += weight * value;
+        }
+
+        return (interval / 3) * total;
+    }
+
+    function validateAdvancedFunctionSyntax(expression) {
+        const diffMatches = [...expression.matchAll(/diff\((.*?)\)/g)];
+        const intMatches = [...expression.matchAll(/int\((.*?)\)/g)];
+
+        for (const match of diffMatches) {
+            const argumentCount = splitTopLevelArguments(match[1]).length;
+
+            if (argumentCount !== 2) {
+                throw new Error('Invalid diff syntax');
+            }
+        }
+
+        for (const match of intMatches) {
+            const argumentCount = splitTopLevelArguments(match[1]).length;
+
+            if (argumentCount !== 3) {
+                throw new Error('Invalid int syntax');
+            }
+        }
+    }
+
+    function splitTopLevelArguments(argumentString) {
+        const argumentsList = [];
+        let currentArgument = '';
+        let depth = 0;
+
+        for (const character of argumentString) {
+            if (character === '(') {
+                depth += 1;
+                currentArgument += character;
+                continue;
+            }
+
+            if (character === ')') {
+                depth -= 1;
+                currentArgument += character;
+                continue;
+            }
+
+            if (character === ',' && depth === 0) {
+                argumentsList.push(currentArgument.trim());
+                currentArgument = '';
+                continue;
+            }
+
+            currentArgument += character;
+        }
+
+        if (currentArgument.trim() !== '') {
+            argumentsList.push(currentArgument.trim());
+        }
+
+        return argumentsList;
+    }
+
+    function evaluateCore(expression, xValue) {
+        const sanitized = normalizeExpression(expression);
+
+        return Function(
+            'x',
+            'sin',
+            'cos',
+            'tan',
+            'log',
+            'ln',
+            'abs',
+            'sqrt',
+            'recip',
+            'fact',
+            'Math',
+            `"use strict"; return (${sanitized});`
+        )(xValue, sin, cos, tan, log, ln, absValue, sqrt, recip, fact, Math);
+    }
+
+    function normalizeExpression(expression) {
+        let normalized = expression
+            .replace(/π/g, 'pi')
+            .replace(/%/g, '/100');
+
+        validateAdvancedFunctionSyntax(normalized);
+
+        normalized = balanceParentheses(normalized);
+
+        while (/!/.test(normalized)) {
+            const next = normalized.replace(/(\([^()]*\)|\d+(?:\.\d+)?|Math\.PI|Math\.E)!/g, 'fact($1)');
+
+            if (next === normalized) {
+                break;
+            }
+
+            normalized = next;
+        }
+
+        normalized = normalized
+            .replace(/(\d|\)|pi|e|x)(?=\()/g, '$1*')
+            .replace(/(\d|\)|pi|e|x)(?=(sin|cos|tan|log|ln|sqrt|abs|recip|fact|pi|e|x))/g, '$1*')
+            .replace(/(\))(?=\d|pi|e|x|sin|cos|tan|log|ln|sqrt|abs|recip|fact|\()/g, '$1*');
+
+        normalized = normalized
+            .replace(/\bpi\b/g, 'Math.PI')
+            .replace(/\be\b/g, 'Math.E');
+
+        return normalized;
+    }
+
+    function balanceParentheses(expression) {
+        let openCount = 0;
+
+        for (const character of expression) {
+            if (character === '(') {
+                openCount += 1;
+            } else if (character === ')' && openCount > 0) {
+                openCount -= 1;
+            }
+        }
+
+        return expression + ')'.repeat(openCount);
+    }
+
+    function formatResult(value) {
+        if (Number.isNaN(value)) {
+            return 'Error';
+        }
+
+        if (value === Infinity || value === -Infinity) {
+            return String(value);
+        }
+
+        if (Math.abs(value) < 1e-12) {
+            return '0';
+        }
+
+        const rounded = Number(value.toPrecision(12));
+
+        if (Math.abs(rounded) < 1e-12) {
+            return '0';
+        }
+
+        return String(rounded);
+    }
+
+    function sin(value) {
+        const radians = toRadians(value);
+        return normalizeNearZero(Math.sin(radians));
+    }
+
+    function cos(value) {
+        const radians = toRadians(value);
+        return normalizeNearZero(Math.cos(radians));
+    }
+
+    function tan(value) {
+        const radians = toRadians(value);
+        const cosine = Math.cos(radians);
+
+        if (Math.abs(cosine) < 1e-12) {
+            return Infinity;
+        }
+
+        return normalizeNearZero(Math.tan(radians));
+    }
+
+    function log(value) {
+        const numericValue = Number(value);
+
+        if (numericValue <= 0) {
+            return NaN;
+        }
+
+        return Math.log10(numericValue);
+    }
+
+    function ln(value) {
+        const numericValue = Number(value);
+
+        if (numericValue <= 0) {
+            return NaN;
+        }
+
+        return Math.log(numericValue);
+    }
+
+    function absValue(value) {
+        return Math.abs(Number(value));
+    }
+
+    function sqrt(value) {
+        const numericValue = Number(value);
+
+        if (numericValue < 0) {
+            return NaN;
+        }
+
+        return Math.sqrt(numericValue);
+    }
+
+    function recip(value) {
+        const numericValue = Number(value);
+
+        if (numericValue === 0) {
+            return Infinity;
+        }
+
+        return 1 / numericValue;
+    }
+
+    function fact(value) {
+        const numericValue = Number(value);
+
+        if (!Number.isInteger(numericValue) || numericValue < 0) {
+            return NaN;
+        }
+
+        let result = 1;
+
+        for (let index = 2; index <= numericValue; index += 1) {
+            result *= index;
+        }
+
+        return result;
+    }
+
+    function toRadians(value) {
+        return (Number(value) * Math.PI) / 180;
+    }
+
+    function normalizeNearZero(value) {
+        return Math.abs(value) < 1e-12 ? 0 : value;
+    }
+</script>
+
+</body>
+</html>
